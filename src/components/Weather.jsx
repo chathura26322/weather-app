@@ -8,6 +8,7 @@ import snow_icon from "../assets/snow.png";
 import wind_icon from "../assets/wind.png";
 import humidity_icon from "../assets/humidity.png";
 import { useEffect, useRef, useState } from "react";
+import countries from "../assets/countries.js";
 
 const Weather = () => {
   const inputRef = useRef();
@@ -54,6 +55,7 @@ const Weather = () => {
         tempearture: Math.floor(data.main.temp),
         windSpeed: data.wind.speed,
         location: data.name,
+        country: data.sys.country,
         icon: icon,
       });
     } catch (error) {
@@ -80,6 +82,7 @@ const Weather = () => {
           <img src={weatherData.icon} alt="" className="weather-icon" />
           <p className="temperature">{weatherData.tempearture}ºc</p>
           <p className="location">{weatherData.location}</p>
+          <p className="country">{countries[weatherData.country]}</p>
           <div className="weather-data">
             <div className="col">
               <img src={humidity_icon} alt="" />
