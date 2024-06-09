@@ -30,7 +30,8 @@ const Weather = () => {
     "13d": snow_icon,
     "13n": snow_icon,
   };
-  const search = async (city) => {
+
+  const searchByCity = async (city) => {
     if (city === "") {
       alert("Please enter a valid city");
       return;
@@ -48,24 +49,65 @@ const Weather = () => {
         return;
       }
 
-      console.log(data);
-      const icon = allIcons[data.weather[0].icon] || clear_icon;
-      setWeatherData({
-        humidity: data.main.humidity,
-        tempearture: Math.floor(data.main.temp),
-        windSpeed: data.wind.speed,
-        location: data.name,
-        country: data.sys.country,
-        icon: icon,
-      });
+      updateWeatherData(data);
     } catch (error) {
-      setWeatherData(false); //hide the details
+      setWeatherData(false); // hide the details
       console.log(error);
     }
   };
+
+  const searchByCoords = async (latitude, longitude) => {
+    try {
+      const url = `https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&units=metric&appid=${
+        import.meta.env.VITE_APP_ID
+      }`;
+
+      const response = await fetch(url);
+      const data = await response.json();
+
+      if (!response.ok) {
+        alert(data.message);
+        return;
+      }
+
+      updateWeatherData(data);
+    } catch (error) {
+      setWeatherData(false); // hide the details
+      console.log(error);
+    }
+  };
+
+  const updateWeatherData = (data) => {
+    const icon = allIcons[data.weather[0].icon] || clear_icon;
+    setWeatherData({
+      humidity: data.main.humidity,
+      tempearture: Math.floor(data.main.temp),
+      windSpeed: data.wind.speed,
+      location: data.name,
+      country: data.sys.country,
+      icon: icon,
+    });
+  };
+
   useEffect(() => {
-    search("Colombo");
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          searchByCoords(latitude, longitude);
+        },
+        (error) => {
+          console.log(error);
+          // Default to Colombo if geolocation fails
+          searchByCity("Colombo");
+        }
+      );
+    } else {
+      // Default to Colombo if geolocation is not available
+      searchByCity("Colombo");
+    }
   }, []);
+
   return (
     <div className="weather">
       <div className="search-bar">
@@ -74,7 +116,7 @@ const Weather = () => {
         <img
           src={search_icon}
           alt=""
-          onClick={() => search(inputRef.current.value)}
+          onClick={() => searchByCity(inputRef.current.value)}
         />
       </div>
       {weatherData ? (
